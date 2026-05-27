@@ -113,6 +113,7 @@ RUN /opt/unsloth-venv/bin/pip install --no-cache-dir --no-deps \
     --target /opt/unsloth-venv-t5 \
     tiktoken
 
+RUN /opt/unsloth-venv/bin/pip install --no-cache-dir --upgrade transformers
 # ============================================
 # Layer 11: Copy start script
 # ============================================
