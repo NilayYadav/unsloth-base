@@ -138,8 +138,9 @@ ARG LLAMA_CPP_REF=master
 RUN apt-get update && apt-get install -y --no-install-recommends \
         cmake build-essential git && \
     apt-get clean && rm -rf /var/lib/apt/lists/* && \
-    git clone https://github.com/ggerganov/llama.cpp.git /opt/llama.cpp && \
-    cd /opt/llama.cpp && git checkout ${LLAMA_CPP_REF} && \
+    git clone --depth 1 --branch ${LLAMA_CPP_REF} \
+        https://github.com/ggerganov/llama.cpp.git /opt/llama.cpp && \
+    cd /opt/llama.cpp && \
     cmake -B build \
         -DGGML_CUDA=ON \
         -DLLAMA_CURL=OFF \
