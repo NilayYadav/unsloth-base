@@ -113,7 +113,19 @@ RUN /opt/unsloth-venv/bin/pip install --no-cache-dir --no-deps \
     --target /opt/unsloth-venv-t5 \
     tiktoken
 
-RUN /opt/unsloth-venv/bin/pip install --no-cache-dir --upgrade transformers
+# ============================================
+  # Layer 10.5: Build llama-server (CUDA) for GGUF inference
+  # ============================================
+ARG LLAMA_CPP_REF=master
+RUN apt-get update && apt-get install -y --no-install-recommends \
+     cmake build-essential git && \
+      apt-get clean && rm -rf /var/lib/apt/lists/* && \
+      git clone https://github.com/ggerganov/llama.cpp.git /opt/llama.cpp && \
+      cd /opt/llama.cpp && git checkout ${LLAMA_CPP_REF} && \
+      cmake -B build -DGGML_CUDA=ON -DLLAMA_CURL=OFF -DCMAKE_BUILD_TYPE=Release && \
+      cmake --build build --config Release --target llama-server -j"$(nproc)" && \
+      mkdir -p /root/.unsloth && ln -s /opt/llama.cpp /root/.unsloth/llama.cpp
+ENV LLAMA_SERVER_PATH=/opt/llama.cpp/build/bin/llama-server
 # ============================================
 # Layer 11: Copy start script
 # ============================================
