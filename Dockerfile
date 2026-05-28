@@ -119,14 +119,20 @@ RUN /opt/unsloth-venv/bin/pip install --no-cache-dir --no-deps \
 # build time; the real driver lib is mounted by nvidia-container-runtime.
 # ============================================
 ARG LLAMA_CPP_REF=master
+# libcuda.so.1 ships at runtime via nvidia-container-runtime, not at build time.
+# `--allow-shlib-undefined` is what upstream llama.cpp's .devops/cuda.Dockerfile
+# uses for exactly this — defer those symbol references to the dynamic loader.
 RUN apt-get update && apt-get install -y --no-install-recommends \
         cmake build-essential git && \
     apt-get clean && rm -rf /var/lib/apt/lists/* && \
     git clone https://github.com/ggerganov/llama.cpp.git /opt/llama.cpp && \
     cd /opt/llama.cpp && git checkout ${LLAMA_CPP_REF} && \
-    cmake -B build -DGGML_CUDA=ON -DLLAMA_CURL=OFF -DCMAKE_BUILD_TYPE=Release && \
-    LIBRARY_PATH=/usr/local/cuda/lib64/stubs:${LIBRARY_PATH:-} \
-        cmake --build build --config Release --target llama-server -j"$(nproc)" && \
+    cmake -B build \
+        -DGGML_CUDA=ON \
+        -DLLAMA_CURL=OFF \
+        -DCMAKE_BUILD_TYPE=Release \
+        -DCMAKE_EXE_LINKER_FLAGS="-Wl,--allow-shlib-undefined" && \
+    cmake --build build --config Release --target llama-server -j"$(nproc)" && \
     mkdir -p /root/.unsloth && ln -s /opt/llama.cpp /root/.unsloth/llama.cpp
 ENV LLAMA_SERVER_PATH=/opt/llama.cpp/build/bin/llama-server
 
