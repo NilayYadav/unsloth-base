@@ -103,6 +103,16 @@ RUN /opt/unsloth-venv/bin/python single-env/patch_metadata.py
 RUN /opt/unsloth-venv/bin/pip install --no-cache-dir -e /opt/unsloth
 
 # ============================================
+# Layer 9.5: Pin tokenizers to the highest version transformers will accept.
+# Studio's transformers (4.57.x) requires `tokenizers>=0.22.0,<=0.23.0`, but
+# `0.23.0` was never published on PyPI (only `0.23.0rc0`, then `0.23.1`).
+# Other layers above can drag in `0.23.1` transitively, which crashes Studio
+# at import time with "tokenizers>=0.22.0,<=0.23.0 is required". Force the
+# latest version that actually satisfies the constraint.
+# ============================================
+RUN /opt/unsloth-venv/bin/pip install --no-cache-dir 'tokenizers==0.22.2'
+
+# ============================================
 # Layer 10: Create transformers 5.x overlay (flat --target dir, NOT a venv)
 # Studio prepends this to sys.path for T5 worker subprocesses
 # ============================================
