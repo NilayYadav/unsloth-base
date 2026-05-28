@@ -12,9 +12,12 @@ RUN curl -fsSL https://deb.nodesource.com/setup_${NODE_MAJOR}.x | bash - && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # ============================================
-# Layer 2: Clone Unsloth repo (pin to specific commit for reproducibility)
+# Layer 2: Clone Unsloth repo (pin to specific commit for reproducibility).
+# Must be >= 9a261aec for POST /api/auth/api-keys to exist so the CLI can mint
+# long-lived sk-unsloth-... credentials, and >= 3f3757b1 for the transformers
+# 5.x compat fix (_skip_config_exec_patch).
 # ============================================
-ARG UNSLOTH_COMMIT=29270a3726d00c2dd11bb049b61d838e60ef341b
+ARG UNSLOTH_COMMIT=185ff00c62853c376d1a7dbeac98d0e60517b2fc
 RUN git clone https://github.com/unslothai/unsloth.git /opt/unsloth && \
     cd /opt/unsloth && \
     git checkout ${UNSLOTH_COMMIT}
